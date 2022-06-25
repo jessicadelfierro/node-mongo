@@ -1,7 +1,9 @@
-//define const that will act as a client for the mongo server that requires the mongodb node driver and mongo client object
+//require mongodb node.js driver and imported in the mongoclient object from it
 const MongoClient = require('mongodb').MongoClient;
 //require assert and use the strict version
 const assert = require('assert').strict;
+//require operations module
+const dboper = require('./operations');
 
 //set up a connection to the mongodb server
 //url where the mongodb server can be accessed
@@ -25,16 +27,39 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
         assert.strictEqual(err, null);
         console.log('Dropped Collection', result);
 
+        //insert document into this collection
+        //calling insertDocument function
+        //result: defining callback function which wont be called until later at the end of insertDocument when it's called
+        dboper.insertDocument(db, {name: "Breadcrumb Trail Campground", description: "Test"}, 'campsites', result => {
+            console.log('Insert Document:', result.ops); //ops short for operations, contain an array with the document that was inserted
+            //method will immediately close the client's connection to the mongodb server
+            dboper.findDocuments(db, 'campsites', docs => {
+                console.log('Found Documents: ', docs);
+                dboper.updateDocument(db, { name: "Breadcrumb Trail Campground" }, { description: "Updated Test Description"}, 'campsites', result => {
+                    //console.log count of documents updated
+                    console.log('Updated Document count: ', result.result.nModified);
+                    dboper.findDocuments(db, 'campsites', docs => {
+                        console.log('Found Documents: ', docs);
+                        dboper.removeDocument(db, { name: "Breadcrumb Trail Campground" }, 'campsites', result => {
+                            console.log('Deleted Document Count: ', result.deleteCount);
+                            client.close();
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
+
+
+/*
+DELETED --
+
         //recreate campsite's collection and get access to it
         const collection = db.collection('campsites');
 
-        //insert document into this collection
-        collection.insertOne({name: "Breadcrumb Trail Campground", description: "Test"},
-        (err, result) => {
-            assert.strictEqual(err, null);
-            console.log('Insert Document:', result.ops); //ops short for operations, contain an array with the document that was inserted
-
-            //print to the console all the documents that are now in this collection
+                    //print to the console all the documents that are now in this collection
             //in order to get the find method to return all the documents, give it an empty parameter list
             //toArray: convert the documents to an array of objects
             collection.find().toArray((err, docs) => {
@@ -43,7 +68,6 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
 
                 //method will immediately close the client's connection to the mongodb server
                 client.close();
-            });
-        });
-    });
-});
+            }
+
+*/
