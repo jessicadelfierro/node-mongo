@@ -3,6 +3,28 @@
 //require assert module, strict version
 const assert = require('assert').strict;
 
+exports.insertDocument = (db, document, collection) => {
+    const coll = db.collection(collection);
+    return coll.insertOne(document);
+};
+
+exports.findDocuments = (db, collection) => {
+    const coll = db.collection(collection);
+    return coll.find({}).toArray();
+};
+
+exports.removeDocument = (db, document, collection) => {
+    const coll = db.collection(collection);
+    return coll.deleteOne(document);
+};
+
+exports.updateDocument = (db, document, update, collection) => {
+    const coll = db.collection(collection);
+    return coll.updateOne(document, { $set: update }, null);
+};
+
+/*
+ORIGINAL with callback function:
 //4 parameters: db that we're using, the document that we want to insert, the collection that the document is in, and a callback function that will be called at the end
 exports.insertDocument = (db, document, collection, callback) => {
     //way to access collection in a connected database
@@ -13,7 +35,6 @@ exports.insertDocument = (db, document, collection, callback) => {
         callback(result);
     });
 };
-
 exports.findDocuments = (db, collection, callback) => {
     const coll = db.collection(collection);
     //find has empty parameter list to indicate that we want to find all documents in this collection, toarray to put all the documents that were found into an array
@@ -22,7 +43,6 @@ exports.findDocuments = (db, collection, callback) => {
         callback(docs);
     });
 };
-
 exports.removeDocument = (db, document, collection, callback) => {
     const coll = db.collection(collection);
     coll.deleteOne(document, (err, result) => {
@@ -30,7 +50,6 @@ exports.removeDocument = (db, document, collection, callback) => {
         callback(result);
     });
 };
-
 exports.updateDocument = (db, document, update, collection, callback) => {
     const coll = db.collection(collection);
     //4 parameters: object that contains info about the document that we want to update, object containing the information about the updates that we want to make (update operator ($set: update object)), certain optional configurations, callback that will either give us an error or the result of the operation 
@@ -39,3 +58,4 @@ exports.updateDocument = (db, document, update, collection, callback) => {
         callback(result);
     });
 };
+*/

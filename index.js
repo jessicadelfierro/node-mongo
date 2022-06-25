@@ -12,7 +12,61 @@ const url = 'mongodb://localhost:27017/';
 const dbname = 'nucampsite';
 
 //access server, this method allows us to connect the mongo client with the mongodb server
-MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
+MongoClient.connect(url, { useUnifiedTopology: true }).then(client => {
+    console.log('Connected correctly to server');
+
+    //connect to the nucampsite database on the mongodb server
+    const db = client.db(dbname);
+
+    //deleting all the documents in the campsites collection or "drop" a collection
+    db.dropCollection('campsites').then(result => {
+        console.log('Dropped Collection: ', result);
+    }).catch(err => console.log('No collection to drop.'));
+
+    dboper.insertDocument(db, {name: "Breadcrumb Trail Campground", description: "Test"}, 'campsites').then(result => {
+        console.log('Insert Document: ', result.ops);
+        return dboper.findDocuments(db, 'campsites');
+    }).then(docs => {
+        console.log('Found Documents: ', docs);
+        return dboper.updateDocument(db,  { name: "Breadcrumb Trail Campground" }, { description: "Updated Test Description" }, 'campsites');
+    }).then(result => {
+        console.log('Updated Document Count: ', result.result.nModified);
+        return dboper.findDocuments(db, 'campsites');
+    }).then(docs => {
+        console.log('Found Documents: ', docs);
+        return dboper.removeDocument(db, { name: "Breadcrumb Trail Campground" }, 'campsites');
+    }).then(result => {
+        console.log('Deleted Document Count: ', result.deletedCount);
+        return client.close();
+    }).catch(err => {
+        console.log(err);
+        client.close();
+    });
+}).catch(err => console.log(err));
+
+
+
+/*
+DELETED --
+
+        //recreate campsite's collection and get access to it
+        const collection = db.collection('campsites');
+
+                    //print to the console all the documents that are now in this collection
+            //in order to get the find method to return all the documents, give it an empty parameter list
+            //toArray: convert the documents to an array of objects
+            collection.find().toArray((err, docs) => {
+                assert.strictEqual(err, null);
+                console.log('Found Documents:', docs);
+
+                //method will immediately close the client's connection to the mongodb server
+                client.close();
+            }
+
+
+            ----
+
+            MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
     //check to make sure that the error is not null
     //first argument is the actual value we are checking, second argument is the expected value that we're checking against to see if the first argument strictly equals the second
     assert.strictEqual(err, null);
@@ -50,24 +104,4 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
         });
     });
 });
-
-
-
-/*
-DELETED --
-
-        //recreate campsite's collection and get access to it
-        const collection = db.collection('campsites');
-
-                    //print to the console all the documents that are now in this collection
-            //in order to get the find method to return all the documents, give it an empty parameter list
-            //toArray: convert the documents to an array of objects
-            collection.find().toArray((err, docs) => {
-                assert.strictEqual(err, null);
-                console.log('Found Documents:', docs);
-
-                //method will immediately close the client's connection to the mongodb server
-                client.close();
-            }
-
 */
